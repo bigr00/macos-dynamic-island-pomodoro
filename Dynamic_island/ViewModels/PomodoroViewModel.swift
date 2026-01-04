@@ -47,10 +47,9 @@ final class PomodoroViewModel {
     private func startTimer() {
         stopTimer()
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                self?.tick()
-            }
+            self?.tick()
         }
+        timer?.tolerance = 0.2
     }
     
     private func stopTimer() {

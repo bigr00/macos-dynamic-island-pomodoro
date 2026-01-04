@@ -30,7 +30,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         window.isOpaque = false
         window.backgroundColor = .clear
-        window.hasShadow = true
+        window.hasShadow = false
 
         window.level = NSWindow.Level(rawValue: Int(CGWindowLevelForKey(.maximumWindow)))
 

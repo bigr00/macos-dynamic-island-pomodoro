@@ -47,7 +47,6 @@ struct ExpandedIslandView: View {
             Text(viewModel.timeString)
                 .font(.system(size: 48, weight: .bold, design: .monospaced))
                 .foregroundColor(.white)
-                .contentTransition(.numericText(value: viewModel.timeRemaining))
                 .matchedGeometryEffect(id: "timer", in: namespace)
             
             HStack(spacing: 30) {

@@ -37,6 +37,5 @@ struct PulsingDotView: View {
         Circle()
             .fill(color)
             .opacity(isPulsing ? 0.3 : 1.0)
-            .animation(.easeInOut(duration: 0.5), value: isPulsing)
     }
 }

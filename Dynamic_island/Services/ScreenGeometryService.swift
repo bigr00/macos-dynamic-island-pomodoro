@@ -9,9 +9,13 @@ final class ScreenGeometryService {
     let expandedWidth: CGFloat = 340
     let expandedHeight: CGFloat = 220
 
-    private init() {}
+    private var cachedNotchedScreen: NSScreen?
 
-    var notchedScreen: NSScreen? {
+    private init() {
+        self.cachedNotchedScreen = findNotchedScreen()
+    }
+
+    private func findNotchedScreen() -> NSScreen? {
         if #available(macOS 12.0, *) {
             for screen in NSScreen.screens {
                 if screen.auxiliaryTopLeftArea != nil && screen.auxiliaryTopRightArea != nil {
@@ -25,6 +29,15 @@ final class ScreenGeometryService {
             }
         }
         return nil
+    }
+
+    var notchedScreen: NSScreen? {
+        if let cached = cachedNotchedScreen {
+            return cached
+        }
+        let found = findNotchedScreen()
+        cachedNotchedScreen = found
+        return found
     }
 
     var hasNotchedScreen: Bool {
