@@ -66,9 +66,9 @@ struct ExpandedIslandView: View {
                         viewModel.toggleTimer()
                     }
                 }) {
-                    Image(systemName: viewModel.isActive ? "pause.fill" : "play.fill")
+                    Image(systemName: viewModel.isAlarming ? "square.fill" : (viewModel.isActive ? "pause.fill" : "play.fill"))
                         .font(.system(size: 32))
-                        .foregroundColor(.white)
+                        .foregroundColor(viewModel.isAlarming ? .red : .white)
                 }
                 .buttonStyle(.plain)
                 

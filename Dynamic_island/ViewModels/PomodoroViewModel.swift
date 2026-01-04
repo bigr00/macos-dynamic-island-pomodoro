@@ -17,6 +17,9 @@ final class PomodoroViewModel {
     private var collapseTask: Task<Void, Never>?
     private var endTime: Date?
     
+    private var alarmTimer: Timer?
+    var isAlarming: Bool = false
+    
     var progress: Double {
         let total = currentPhase.duration
         return (total - timeRemaining) / total
@@ -42,6 +45,11 @@ final class PomodoroViewModel {
     }
     
     func toggleTimer() {
+        if isAlarming {
+            stopAlarm()
+            return
+        }
+        
         isActive.toggle()
         if isActive {
             endTime = Date().addingTimeInterval(timeRemaining)
@@ -51,12 +59,17 @@ final class PomodoroViewModel {
         }
     }
     
+    private func stopAlarm() {
+        alarmTimer?.invalidate()
+        alarmTimer = nil
+        isAlarming = false
+    }
+    
     private func startTimer() {
         stopTimer()
         
         let interval: TimeInterval = islandState == .expanded ? 1.0 : 10.0
         
-        // Immediate tick to update UI
         tick()
         
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
@@ -85,37 +98,28 @@ final class PomodoroViewModel {
     }
     
     private func completePhase() {
-        playCompletionSound(for: currentPhase)
-        
         isActive = false
         stopTimer()
         endTime = nil
-        skipPhase()
+        startAlarm()
     }
     
-    private func playCompletionSound(for phase: PomodoroPhase) {
-        let soundName: String
-        let repeatCount: Int
+    private func startAlarm() {
+        guard !isAlarming else { return }
+        isAlarming = true
         
-        switch phase {
-        case .work:
-            soundName = "Glass"
-            repeatCount = 3
-        case .shortBreak, .longBreak:
-            soundName = "Bottle"
-            repeatCount = 2
-        }
+        let soundName = (currentPhase == .work) ? "Glass" : "Bottle"
         
-        Task {
-            for _ in 0..<repeatCount {
-                NSSound(named: soundName)?.play()
-                try? await Task.sleep(nanoseconds: 800_000_000)
-            }
+        NSSound(named: soundName)?.play()
+        
+        alarmTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
+            NSSound(named: soundName)?.play()
         }
     }
     
     func skipPhase() {
         stopTimer()
+        stopAlarm()
         isActive = false
         endTime = nil
         
@@ -131,6 +135,7 @@ final class PomodoroViewModel {
     
     func resetTimer() {
         stopTimer()
+        stopAlarm()
         isActive = false
         endTime = nil
         timeRemaining = currentPhase.duration
@@ -147,7 +152,6 @@ final class PomodoroViewModel {
             }
             onStateChange?(true)
             
-            // Switch to high frequency updates when expanded
             if isActive {
                 startTimer()
             }
@@ -162,7 +166,6 @@ final class PomodoroViewModel {
                 }
                 onStateChange?(false)
                 
-                // Switch to low frequency updates when collapsed
                 if self.isActive {
                     self.startTimer()
                 }
