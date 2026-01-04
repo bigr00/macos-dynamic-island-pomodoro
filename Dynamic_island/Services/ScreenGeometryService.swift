@@ -1,0 +1,61 @@
+import AppKit
+
+@MainActor
+final class ScreenGeometryService {
+    static let shared = ScreenGeometryService()
+
+    let collapsedWidth: CGFloat = 320
+    let collapsedHeight: CGFloat = 36
+    let expandedWidth: CGFloat = 340
+    let expandedHeight: CGFloat = 220
+
+    private init() {}
+
+    var notchedScreen: NSScreen? {
+        if #available(macOS 12.0, *) {
+            for screen in NSScreen.screens {
+                if screen.auxiliaryTopLeftArea != nil && screen.auxiliaryTopRightArea != nil {
+                    return screen
+                }
+            }
+        }
+        for screen in NSScreen.screens {
+            if screen.localizedName.contains("Built-in") {
+                return screen
+            }
+        }
+        return nil
+    }
+
+    var hasNotchedScreen: Bool {
+        notchedScreen != nil
+    }
+
+    func collapsedFrame() -> NSRect {
+        guard let screen = notchedScreen else {
+            return NSRect(x: -1000, y: -1000, width: collapsedWidth, height: collapsedHeight)
+        }
+
+        let screenFrame = screen.frame
+
+        let x = screenFrame.origin.x + (screenFrame.width - collapsedWidth) / 2
+
+        let y = screenFrame.maxY - collapsedHeight
+
+        return NSRect(x: x, y: y, width: collapsedWidth, height: collapsedHeight)
+    }
+
+    func expandedFrame() -> NSRect {
+        guard let screen = notchedScreen else {
+            return NSRect(x: -1000, y: -1000, width: expandedWidth, height: expandedHeight)
+        }
+
+        let screenFrame = screen.frame
+
+        let x = screenFrame.origin.x + (screenFrame.width - expandedWidth) / 2
+
+        let y = screenFrame.maxY - expandedHeight
+
+        return NSRect(x: x, y: y, width: expandedWidth, height: expandedHeight)
+    }
+}
