@@ -12,11 +12,8 @@ struct CollapsedPillView: View {
                     .foregroundColor(.white)
                 
                 if viewModel.isActive {
-                    PulsingDotView(
-                        color: viewModel.currentPhase == .work ? .red : .green,
-                        isPulsing: viewModel.pulse
-                    )
-                    .frame(width: 6, height: 6)
+                    StatusDotView(color: viewModel.currentPhase == .work ? .red : .green)
+                        .frame(width: 6, height: 6)
                 }
             }
             .padding(.leading, 12)
@@ -29,13 +26,11 @@ struct CollapsedPillView: View {
     }
 }
 
-struct PulsingDotView: View {
+struct StatusDotView: View {
     let color: Color
-    let isPulsing: Bool
     
     var body: some View {
         Circle()
             .fill(color)
-            .opacity(isPulsing ? 0.3 : 1.0)
     }
 }
