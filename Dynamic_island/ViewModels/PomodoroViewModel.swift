@@ -10,6 +10,7 @@ final class PomodoroViewModel {
     var isActive: Bool = false
     var islandState: IslandState = .collapsed
     var isHovering: Bool = false
+    var pulse: Bool = false
     
     var onStateChange: ((Bool) -> Void)?
     
@@ -55,9 +56,11 @@ final class PomodoroViewModel {
     private func stopTimer() {
         timer?.invalidate()
         timer = nil
+        pulse = false
     }
     
     private func tick() {
+        pulse.toggle()
         guard timeRemaining > 0 else {
             completePhase()
             return

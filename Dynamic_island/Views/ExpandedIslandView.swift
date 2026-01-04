@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 struct ExpandedIslandView: View {
     let viewModel: PomodoroViewModel
@@ -31,6 +32,15 @@ struct ExpandedIslandView: View {
                 }
                 
                 Spacer()
+                
+                Button(action: {
+                    NSApplication.shared.terminate(nil)
+                }) {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.white.opacity(0.6))
+                }
+                .buttonStyle(.plain)
             }
             .padding(.horizontal, 20)
             

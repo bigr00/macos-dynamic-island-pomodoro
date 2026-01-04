@@ -12,8 +12,11 @@ struct CollapsedPillView: View {
                     .foregroundColor(.white)
                 
                 if viewModel.isActive {
-                    PulsingDotView(color: viewModel.currentPhase == .work ? .red : .green)
-                        .frame(width: 6, height: 6)
+                    PulsingDotView(
+                        color: viewModel.currentPhase == .work ? .red : .green,
+                        isPulsing: viewModel.pulse
+                    )
+                    .frame(width: 6, height: 6)
                 }
             }
             .padding(.leading, 12)
@@ -28,16 +31,12 @@ struct CollapsedPillView: View {
 
 struct PulsingDotView: View {
     let color: Color
-    @State private var opacity: Double = 1.0
+    let isPulsing: Bool
     
     var body: some View {
         Circle()
             .fill(color)
-            .opacity(opacity)
-            .onAppear {
-                withAnimation(.easeInOut(duration: 1.0).repeatForever()) {
-                    opacity = 0.3
-                }
-            }
+            .opacity(isPulsing ? 0.3 : 1.0)
+            .animation(.easeInOut(duration: 0.5), value: isPulsing)
     }
 }
