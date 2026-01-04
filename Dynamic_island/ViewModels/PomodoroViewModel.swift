@@ -15,6 +15,7 @@ final class PomodoroViewModel {
     
     private var timer: Timer?
     private var collapseTask: Task<Void, Never>?
+    private var endTime: Date?
     
     var progress: Double {
         let total = currentPhase.duration
@@ -37,6 +38,7 @@ final class PomodoroViewModel {
     func toggleTimer() {
         isActive.toggle()
         if isActive {
+            endTime = Date().addingTimeInterval(timeRemaining)
             startTimer()
         } else {
             stopTimer()
@@ -45,10 +47,16 @@ final class PomodoroViewModel {
     
     private func startTimer() {
         stopTimer()
-        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+        
+        let interval: TimeInterval = islandState == .expanded ? 1.0 : 10.0
+        
+        // Immediate tick to update UI
+        tick()
+        
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: true) { [weak self] _ in
             self?.tick()
         }
-        timer?.tolerance = 0.2
+        timer?.tolerance = interval * 0.1
     }
     
     private func stopTimer() {
@@ -57,11 +65,15 @@ final class PomodoroViewModel {
     }
     
     private func tick() {
-        guard timeRemaining > 0 else {
+        guard let endTime = endTime else { return }
+        let remaining = endTime.timeIntervalSinceNow
+        
+        if remaining > 0 {
+            timeRemaining = remaining
+        } else {
+            timeRemaining = 0
             completePhase()
-            return
         }
-        timeRemaining -= 1
     }
     
     private func completePhase() {
@@ -69,12 +81,14 @@ final class PomodoroViewModel {
         
         isActive = false
         stopTimer()
+        endTime = nil
         skipPhase()
     }
     
     func skipPhase() {
         stopTimer()
         isActive = false
+        endTime = nil
         
         switch currentPhase {
         case .work:
@@ -89,6 +103,7 @@ final class PomodoroViewModel {
     func resetTimer() {
         stopTimer()
         isActive = false
+        endTime = nil
         timeRemaining = currentPhase.duration
     }
     
@@ -102,6 +117,11 @@ final class PomodoroViewModel {
                 islandState = .expanded
             }
             onStateChange?(true)
+            
+            // Switch to high frequency updates when expanded
+            if isActive {
+                startTimer()
+            }
         } else {
             collapseTask = Task {
                 try? await Task.sleep(nanoseconds: 250_000_000)
@@ -112,6 +132,11 @@ final class PomodoroViewModel {
                     islandState = .collapsed
                 }
                 onStateChange?(false)
+                
+                // Switch to low frequency updates when collapsed
+                if self.isActive {
+                    self.startTimer()
+                }
             }
         }
     }
