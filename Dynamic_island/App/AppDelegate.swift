@@ -59,16 +59,30 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         self.dynamicIslandWindow = window
 
-        viewModel.onStateChange = { [weak self] isExpanded in
-            self?.updateWindowFrame(expanded: isExpanded)
+        viewModel.onStateChange = { [weak self] _ in
+            self?.updateWindowFrame()
+        }
+        
+        viewModel.onHistoryToggle = { [weak self] _ in
+            self?.updateWindowFrame()
         }
     }
 
-    private func updateWindowFrame(expanded: Bool) {
-        guard let window = dynamicIslandWindow else { return }
+    private func updateWindowFrame() {
+        guard let window = dynamicIslandWindow, let viewModel = self.viewModel else { return }
 
         let geometryService = ScreenGeometryService.shared
-        let newFrame = expanded ? geometryService.expandedFrame() : geometryService.collapsedFrame()
+        let newFrame: NSRect
+        
+        if viewModel.islandState == .expanded {
+            if viewModel.showHistory {
+                newFrame = geometryService.expandedWithHistoryFrame()
+            } else {
+                newFrame = geometryService.expandedFrame()
+            }
+        } else {
+            newFrame = geometryService.collapsedFrame()
+        }
 
         NSAnimationContext.runAnimationGroup { context in
             context.duration = 0.35

@@ -21,3 +21,10 @@ enum PomodoroPhase: String, CaseIterable, Equatable {
         }
     }
 }
+
+struct PomodoroSession: Identifiable, Equatable {
+    let id = UUID()
+    let phase: PomodoroPhase
+    let duration: TimeInterval
+    let date: Date
+}

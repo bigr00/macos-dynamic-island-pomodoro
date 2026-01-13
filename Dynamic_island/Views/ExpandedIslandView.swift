@@ -34,6 +34,21 @@ struct ExpandedIslandView: View {
                 Spacer()
                 
                 Button(action: {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        viewModel.showHistory.toggle()
+                    }
+                }) {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.system(size: 16))
+                        .foregroundColor(viewModel.showHistory ? .white : .white.opacity(0.6))
+                        .padding(6)
+                        .background(viewModel.showHistory ? Color.white.opacity(0.2) : Color.clear)
+                        .clipShape(Circle())
+                }
+                .buttonStyle(.plain)
+                .padding(.trailing, 4)
+
+                Button(action: {
                     NSApplication.shared.terminate(nil)
                 }) {
                     Image(systemName: "xmark.circle.fill")
@@ -83,7 +98,13 @@ struct ExpandedIslandView: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.bottom, 20)
+            .padding(.bottom, viewModel.showHistory ? 10 : 20)
+            
+            if viewModel.showHistory {
+                HistoryView(viewModel: viewModel)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    .frame(height: 230)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

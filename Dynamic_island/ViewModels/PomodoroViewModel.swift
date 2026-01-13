@@ -11,7 +11,27 @@ final class PomodoroViewModel {
     var islandState: IslandState = .collapsed
     var isHovering: Bool = false
     
+    var history: [PomodoroSession] = []
+    var showHistory: Bool = false {
+        didSet {
+            onHistoryToggle?(showHistory)
+        }
+    }
+    
+    var totalSessions: Int {
+        history.filter { $0.phase == .work }.count
+    }
+    
+    var totalPauses: Int {
+        history.filter { $0.phase == .shortBreak || $0.phase == .longBreak }.count
+    }
+    
+    var totalTime: TimeInterval {
+        history.reduce(0) { $0 + $1.duration }
+    }
+    
     var onStateChange: ((Bool) -> Void)?
+    var onHistoryToggle: ((Bool) -> Void)?
     
     private var timer: Timer?
     private var collapseTask: Task<Void, Never>?
@@ -98,6 +118,7 @@ final class PomodoroViewModel {
     }
     
     private func completePhase() {
+        history.append(PomodoroSession(phase: currentPhase, duration: currentPhase.duration, date: Date()))
         isActive = false
         stopTimer()
         endTime = nil
